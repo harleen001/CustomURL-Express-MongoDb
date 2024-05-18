@@ -15,7 +15,7 @@ app.get("/test", async (req, res) => {
     const allUrls = await URL.find({});
     const urlsList = allUrls.map(url => `
       <li>
-        ${url.shortID} - ${url.redirectURL} - ${url.visitHistory.length}
+        ${url.shortId} - ${url.redirectURL} - ${url.visitHistory.length}
       </li>
     `).join('');
 
