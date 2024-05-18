@@ -5,38 +5,68 @@ const URL = require("./models/url");
 const app = express();
 const port = 8001;
 
-connectToDatabase(
-  "mongodb://127.0.0.1:27017/url"
-).then(() => console.log("Database connected"));
+connectToDatabase("mongodb://127.0.0.1:27017/url").then(() => console.log("Database connected"));
 
-app.use(express.json());
+app.use(express.json()); // Middleware to parse JSON request bodies
 
-app.get("/:shortID", async (req, res) => {
-  const shortID = req.params.shortID;
+// Define the /test route
+app.get("/test", async (req, res) => {
+  try {
+    const allUrls = await URL.find({});
+    const urlsList = allUrls.map(url => `
+      <li>
+        ${url.shortID} - ${url.redirectURL} - ${url.visitHistory.length}
+      </li>
+    `).join('');
 
-  const entry = await URL.findOneAndUpdate(
-    { shortID },
-    {
-      $push: {
-        visitHistory: {
-          timestamp: Date.now(),
-        },
-      },
-    },
-    { new: true } // Return the updated document
-  );
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>All URLs</title>
+      </head>
+      <body>
+        <ol>
+          ${urlsList}
+        </ol>
+      </body>
+      </html>
+    `;
 
-  if (entry && entry.redirectURL) {
-    res.redirect(entry.redirectURL);
-  } else {
-    // Handle the case where entry is null or entry.redirectURL is not available
-    // You could send an error response or redirect to a default URL
-    res.status(404).send("URL not found");
+    res.send(html);
+  } catch (error) {
+    console.error("Error fetching URLs:", error);
+    res.status(500).send("Internal server error");
   }
 });
 
-
+// Use the URL route for /url
 app.use("/url", urlRoute);
+
+// Define the /:shortID route
+app.get("/:shortID", async (req, res) => {
+  const shortID = req.params.shortID;
+
+  try {
+    const entry = await URL.findOneAndUpdate(
+      { shortID },
+      {
+        $push: { visitHistory: { timestamp: Date.now() } }
+      },
+      { new: true }
+    );
+
+    if (entry && entry.redirectURL) {
+      res.redirect(entry.redirectURL);
+    } else {
+      res.status(404).send("URL not found");
+    }
+  } catch (error) {
+    console.error("Error finding or updating URL:", error);
+    res.status(500).send("Internal server error");
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server started at PORT: ${port}.`);

@@ -1,0 +1,20 @@
+npm start
+
+in terminal type -> mongosh
+
+open postman api
+
+
+
+pass in body -> {
+    "url": "https://github.com/harleen001/CustomURL-Express-MongoDb"
+}
+
+to create a short url of this as POST method  http://localhost:8001/url/
+
+
+and in get method http://localhost:8001/url/analytics/cjYndB7LT to track like this 
+
+
+
+to create a new -> http://localhost:8001/url/
