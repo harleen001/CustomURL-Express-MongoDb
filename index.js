@@ -1,48 +1,36 @@
 const { connectToDatabase } = require("./connect");
+const path = require("path");
 const express = require("express");
 const urlRoute = require("./routes/url");
+const staticRoute = require("./routes/static_router");
 const URL = require("./models/url");
 const app = express();
 const port = 8001;
 
 connectToDatabase("mongodb://127.0.0.1:27017/url").then(() => console.log("Database connected"));
 
+
+
+app.set("view engine","ejs");
+app.set('views',path.resolve("./views"));
 app.use(express.json()); // Middleware to parse JSON request bodies
+
+app.use(express. urlencoded({ extended: false }));
 
 // Define the /test route
 app.get("/test", async (req, res) => {
-  try {
+ 
     const allUrls = await URL.find({});
-    const urlsList = allUrls.map(url => `
-      <li>
-        ${url.shortId} - ${url.redirectURL} - ${url.visitHistory.length}
-      </li>
-    `).join('');
+    return res.render('home',{
+urls: allUrls,
+    });
 
-    const html = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>All URLs</title>
-      </head>
-      <body>
-        <ol>
-          ${urlsList}
-        </ol>
-      </body>
-      </html>
-    `;
-
-    res.send(html);
-  } catch (error) {
-    console.error("Error fetching URLs:", error);
-    res.status(500).send("Internal server error");
-  }
 });
 
 // Use the URL route for /url
 app.use("/url", urlRoute);
+
+app.use("/",staticRoute); //If anything will start from /. It will use static Routes
 
 // Define the /:shortID route
 app.get("/:shortID", async (req, res) => {

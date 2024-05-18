@@ -11,19 +11,21 @@ exports.generateNewShortURL = async (req, res) => {
   
     const shortID = shortid.generate(); // Generate shortId using shortid library
   
-    try {
+   // try {
       await URL.create({
         shortId: shortID, // Corrected field name
         redirectURL: url,
         visitHistory: []
       });
   
-      res.status(201).json({ id: shortID }); // Changed to 201 for resource creation
-    } catch (error) {
-      console.error("Error generating short URL:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  };
+     // res.status(201).json({ id: shortID }); // Changed to 201 for resource creation
+   // } catch (error) {
+      //console.error("Error generating short URL:", error);
+     // res.status(500).json({ error: "Internal server error" });
+     return res.render("home", {
+        id: shortID,
+        });
+    };
 
 // Get number of times URL clicked
 exports.getAnalytics = async (req, res) => {
